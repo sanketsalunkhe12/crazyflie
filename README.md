@@ -1,5 +1,8 @@
 # CrazyFlie-ROS2 Interface for Multi-UAV Setup
 
+**Maintained By:** Sanket Salunkhe
+
+
 ## Installation:
 
 ```
@@ -11,3 +14,8 @@ colcon build --symlink-install
 
 
 ## How to run:
+
+### Simulator SITL:
+
+### Hardware CF:
+
