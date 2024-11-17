@@ -67,6 +67,15 @@ install(TARGETS
         crazyflie_server
         DESTINATION lib/${PROJECT_NAME})
 
+# Install Python executables
+install(PROGRAMS
+  scripts/crazyflie_server.py
+  scripts/chooser.py
+  scripts/vel_mux.py
+  scripts/cfmult.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(DIRECTORY
         launch
         config

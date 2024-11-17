@@ -61,7 +61,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument('backend', default_value='cpp'),
-        DeclareLaunchArgument('debug', default_value='False'),
+        DeclareLaunchArgument('debug', default_value='True'),
         Node(
             package='motion_capture_tracking',
             executable='motion_capture_tracking_node',
@@ -85,16 +85,16 @@ def generate_launch_description():
         #     ],
         #     parameters=[teleop_params]
         # ),
-        Node(
-            package='joy',
-            executable='joy_node',
-            name='joy_node' # by default id=0
-        ),
+        # Node(
+        #     package='joy',
+        #     executable='joy_node',
+        #     name='joy_node' # by default id=0
+        # ),
         Node(
             package='crazyflie_interface',
             executable='crazyflie_server.py',
             condition=LaunchConfigurationEquals('backend','cflib'),
-            name='crazyflie_server',
+            name='crazyflie_server_py',
             output='screen',
             parameters=server_params
         ),
@@ -102,7 +102,7 @@ def generate_launch_description():
             package='crazyflie_interface',
             executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','cpp'),
-            name='crazyflie_server',
+            name='crazyflie_server_cpp',
             output='screen',
             parameters=server_params,
             prefix=PythonExpression(['"xterm -e gdb -ex run --args" if ', LaunchConfiguration('debug'), ' else ""']),
@@ -111,7 +111,7 @@ def generate_launch_description():
             package='crazyflie_sim',
             executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','sim'),
-            name='crazyflie_server',
+            name='crazyflie_server_sim',
             output='screen',
             emulate_tty=True,
             parameters=server_params

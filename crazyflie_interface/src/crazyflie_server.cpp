@@ -20,6 +20,8 @@ CrazyflieROS::CrazyflieROS(const std::string& link_uri, const std::string& cf_ty
                                   last_on_latency_(std::chrono::steady_clock::now()),
                                   cfbc_(cfbc)
 {
+    RCLCPP_INFO(logger_, "[%s] CrazyflieROS constructor", name_.c_str());
+    
     auto sub_opt_cf_cmd = rclcpp::SubscriptionOptions();
     sub_opt_cf_cmd.callback_group = callback_group_cf_cmd;
 
@@ -883,6 +885,9 @@ CrazyflieServer::CrazyflieServer(): Node("crazyflie_server"),
                                     logger_(get_logger())
  
 {
+    
+    RCLCPP_INFO(logger_, "CrazyflieServer constructor");
+    
     // no callback groups in crazysim
     // Create callback groups (each group can run in a separate thread)
     callback_group_mocap_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -899,6 +904,8 @@ CrazyflieServer::CrazyflieServer(): Node("crazyflie_server"),
 
     callback_group_cf_srv_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
+    RCLCPP_INFO(logger_, "getting parameters");
+    
     // declare global params
     this->declare_parameter("all.broadcasts.num_repeats", 15);
     this->declare_parameter("all.broadcasts.delay_between_repeats_ms", 1);
@@ -938,12 +945,14 @@ CrazyflieServer::CrazyflieServer(): Node("crazyflie_server"),
         publisher_connection_stats_ = this->create_publisher<crazyflie_msgs::msg::ConnectionStatisticsArray>("all/connection_statistics", 10);
     }
 
+    RCLCPP_INFO(logger_, "getting CF parameters");
     // load crazyflies from params
     auto node_parameters_iface = this->get_node_parameters_interface();
     const std::map<std::string, rclcpp::ParameterValue> &parameter_overrides = node_parameters_iface->get_parameter_overrides();
 
     auto cf_names = extract_names(parameter_overrides, "robots");
     
+    RCLCPP_INFO(logger_, "Found %d Crazyflies", cf_names.size());
     for (const auto &name : cf_names) 
     {
         bool enabled = parameter_overrides.at("robots." + name + ".enabled").get<bool>();
@@ -952,6 +961,8 @@ CrazyflieServer::CrazyflieServer(): Node("crazyflie_server"),
         {
             // Lookup type
             std::string cf_type = parameter_overrides.at("robots." + name + ".type").get<std::string>();
+            
+            ROS_INFO("Found Crazyflie %s of type %s", name.c_str(), cf_type.c_str());
             
             // Find the connection setting for the given type
             const auto con = parameter_overrides.find("robot_types." + cf_type + ".connection");
@@ -975,6 +986,9 @@ CrazyflieServer::CrazyflieServer(): Node("crazyflie_server"),
             if (constr == "crazyflie") 
             {
                 std::string uri = parameter_overrides.at("robots." + name + ".uri").get<std::string>();
+                
+                RCLCPP_INFO(logger_, "[%s] Connecting to %s", name.c_str(), uri.c_str());
+                
                 auto broadcastUri = Crazyflie::broadcastUriFromUnicastUri(uri);
                 
                 if (broadcaster_.count(broadcastUri) == 0) 
@@ -1039,6 +1053,9 @@ CrazyflieServer::CrazyflieServer(): Node("crazyflie_server"),
     // This is the last service to announce and can be used to check if the server is fully available
     service_emergency_ = this->create_service<std_srvs::srv::Empty>("all/emergency", 
                     std::bind(&CrazyflieServer::emergency, this, _1, _2), service_qos, callback_group_all_srv_);
+
+    RCLCPP_INFO(logger_, "CrazyflieServer constructor done");
+
 }
 
 CrazyflieServer::~CrazyflieServer()
@@ -1452,6 +1469,8 @@ void CrazyflieServer::update_name_to_id_map(const std::string& name, uint8_t id)
 // different in crazysim
 int main(int argc, char **argv)
 {
+    RCLCPP_INFO(rclcpp::get_logger("crazyflie_server"), "Starting Crazyflie server...");
+    
     rclcpp::init(argc, argv);
     auto node = std::make_shared<CrazyflieServer>();
 
